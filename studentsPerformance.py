@@ -117,7 +117,7 @@ st['parentLE'] = st['parentLE'].astype('category')
 print(st.info())
 
 #does preparation matter
-fig, axs = plt.subplots(3, 1, sharex=True, figsize = ())
+fig, axs = plt.subplots(3, 1, sharex=True)
 sns.swarmplot(x="gender", y="maths",hue="prepCourse", data=st, ax = axs[0])
 sns.swarmplot(x="gender", y="reading",hue="prepCourse", data=st, ax = axs[1])
 sns.swarmplot(x="gender", y="writing",hue="prepCourse", data=st, ax = axs[2])
@@ -163,6 +163,7 @@ plt.xlabel('Total score')
 plt.show()
 
 #race and education
-race_edu = st[['race', 'parentLE']].groupby(['race', 'parentLE']).size().reset_index()
-
-print("end")
+raceEdu = st[['race', 'parentLE']].groupby(['race', 'parentLE']).size().reset_index()
+raceEdu.rename(columns = {0 : 'count'}, inplace = True)
+raceEdu.pivot_table(values='count', index='race', columns='parentLE')
+raceEdu.plot(kind='bar', stacked=True, figsize=(18.5, 10.5))
