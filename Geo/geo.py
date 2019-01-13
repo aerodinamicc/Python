@@ -14,7 +14,7 @@ for feat in shapefile:
     if feat['properties']['plot_id'] == 1:
         shape = feat
 
-geom = shapefile(feat)
+geom = shape(feat)
 
 
 shape_geopanda = gpd.read_file("polys.shp")
