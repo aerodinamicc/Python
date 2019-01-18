@@ -25,8 +25,6 @@ def scrapeWeb():
               #headline 2: 'subtitle'
               #text: 'article-text', with all the paragraphs separated into different <p></p>
 
-              from apscheduler.schedulers.blocking import BlockingScheduler
-
 
 scheduler = BlockingScheduler()
 scheduler.add_job(scrapeWeb, 'interval', hours=4)
