@@ -1,7 +1,7 @@
 import lxml
 import bs4
 import requests
-#from sets import Set
+from apscheduler.schedulers.blocking import BlockingScheduler
 
 request = requests.get("https://www.vesti.bg/")
 
@@ -11,16 +11,23 @@ titles = set([])
 links = set([])
 h2 = soup.select('.gtm-TopNews-click')
 
-for element in h2:
-    #title = element.p
-    #if title is not None:
-    #    titles.add(title.text)
-    #    continue
-    title = element.img
-    if title is not None:
-       titles.add(title['alt'])
-       links.add(element['href'])
-       continue
+def scrapeWeb():
+       for element in h2:
+              title = element.img
+              if title is not None:
+                     titles.add(title['alt'])
+                     links.add(element['href'])
 
-print(h2)
-print("hi")
+       for link in links:
+              rq = requests.get(link)
+              article = bs4.BeautifulSoup(rq.text, 'lxml')
+
+              #headline 2: 'subtitle'
+              #text: 'article-text', with all the paragraphs separated into different <p></p>
+
+              from apscheduler.schedulers.blocking import BlockingScheduler
+
+
+scheduler = BlockingScheduler()
+scheduler.add_job(scrapeWeb, 'interval', hours=4)
+scheduler.start()
