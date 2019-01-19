@@ -2,9 +2,11 @@ import lxml
 import bs4
 import requests
 from datetime import datetime
+import pandas as pd
+import os
 from apscheduler.schedulers.blocking import BlockingScheduler
 
-def scrapeWeb():
+def scrapeNewArticlesS1():
        request = requests.get("https://www.vesti.bg/")
 
        soup = bs4.BeautifulSoup(request.text, 'lxml')
@@ -20,9 +22,13 @@ def scrapeWeb():
                      titles.append(title['alt'])
                      links.append(link)
 
-       scrapeArticles(links)
+       articles = scrapeLinks(links)
+       articles['title'] = titles
 
-def scrapeArticles(links):
+       return(articles)
+
+def scrapeLinksS1(links):
+       articlesContent = pd.DataFrame(columns = {'link', 'author', 'text', 'subtitle', 'date', 'source'})
        for link in links:
               rq = requests.get(link)
               page = bs4.BeautifulSoup(rq.text, 'lxml')
@@ -35,16 +41,54 @@ def scrapeArticles(links):
               article = page.select('.article-text')[0].select('p')
               articleText = ''
               for paragraphIndex in range(len(article)-2):
-                     para = article[paragraphIndex]
-                     paragraph = str(para)[3:-4] #to exclude <p></p>
+                     para = str(article[paragraphIndex])
+                     if para.startswith('<p dir="ltr" lang="en">'):
+                            continue
+                     paragraph = para[3:-4] #to exclude <p></p>
+                     paragraph = paragraph.replace('\xa0', ' ') #trash
                      articleText = articleText + ' ' + paragraph
 
-              #headline 2: 'subtitle'
-              
+              #headline subtitle
+              articleSubtitle = page.select('h2.subtitle')[0].text
+
               #article time
               articleDate = datetime.now().date()
 
-scrapeWeb()
-#scheduler = BlockingScheduler()
-#scheduler.add_job(scrapeWeb, 'interval', hours=4)
-#scheduler.start()
+              #article source
+              source = page.select('div.article-info-bottom')[0].span #First one is the editor, seond - source
+              source = str(source)
+              articleSource = ''
+              if source is not None:
+                     articleSource = source[6:-7]
+
+              #append to articlesContent
+              articlesContent = articlesContent.append({'link' : link, 'author' : authorName, 'text' : articleText, 'subtitle' : articleSubtitle, 'date' : articleDate, 'source' : articleSource}, ignore_index=True)
+
+       return(articlesContent)
+
+def scrapeS1():
+       newArticles = scrapeNewArticlesS1()
+
+if os.path.exists('S1.csv'):
+       news = pd.read_csv('S1.csv', encoding = 'utf-16')
+       news.append(newArticles, ignore_index = True)
+       news.to_csv('S1.csv', sep=',', encoding = 'utf-16')
+else:
+       newArticles.to_csv('S1.csv', sep=',', encoding = 'utf-16')
+
+def scrapeNewArticlesS2():
+       return()
+
+def scrapeLinksS2(links):
+       return()
+
+def scrapeS2():
+       return()
+
+def scrapeAll():
+       scrapeS1()
+       scrapeS2()
+
+scheduler = BlockingScheduler()
+scheduler.add_job(scrapeAll, 'interval', hours=12)
+scheduler.start()
