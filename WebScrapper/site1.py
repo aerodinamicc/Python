@@ -60,7 +60,7 @@ def scrapeLinksS1(links):
               articleSubtitle = page.select('h2.subtitle')[0].text
 
               #article time
-              articleDate = datetime.now().date()
+              articleDate =  page.select('.article-time')[0].text
 
               #article source
               source = page.select('div.article-info-bottom')[0].span #First one is the editor, seond - source

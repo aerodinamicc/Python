@@ -1,10 +1,5 @@
-import lxml
-import bs4
-import requests
-from datetime import datetime
-import pandas as pd
+#from apscheduler.schedulers.blocking import BlockingScheduler
 import os
-from apscheduler.schedulers.blocking import BlockingScheduler
 import site1
 import site2
 import site3

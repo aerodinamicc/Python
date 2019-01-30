@@ -37,7 +37,7 @@ def scrapeNewArticlesS3(site):
        return(articles)
 
 def scrapeLinksS3(links):
-       articlesContent = pd.DataFrame(columns = {'link', 'location', 'category', 'comments', 'date', 'hashtags', 'views'})
+       articlesContent = pd.DataFrame(columns = {'link', 'title', 'location', 'category', 'comments', 'date', 'hashtags', 'views'})
 
        for link in links:
               rq = requests.get(link)
@@ -75,7 +75,7 @@ def scrapeLinksS3(links):
               tagsString = ' - '.join(tagsList)
 
               #append to articlesContent
-              articlesContent = articlesContent.append({'link' : link, 'location' : location, 'comments' : comments, 'date' : articleDate, 'views' : views, 'category' : category, 'hashtags' : tagsString}, ignore_index=True)
+              articlesContent = articlesContent.append({'link' : link, 'title' : headline, 'location' : location, 'comments' : comments, 'date' : articleDate, 'views' : views, 'category' : category, 'hashtags' : tagsString}, ignore_index=True)
 
        return(articlesContent)
 

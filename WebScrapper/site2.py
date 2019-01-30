@@ -36,7 +36,7 @@ def scrapeNewArticlesS2(site):
        return(articles)
 
 def scrapeLinksS2(links):
-       articlesContent = pd.DataFrame(columns = {'link', 'comments', 'date', 'source',  'hashtags', 'views'})
+       articlesContent = pd.DataFrame(columns = {'link', 'title', 'comments', 'date', 'hashtags', 'views', 'category'})
 
        for link in links:
               rq = requests.get(link)
@@ -46,7 +46,7 @@ def scrapeLinksS2(links):
               headline = page.select('h1')[0].text
 
               #article time
-              articleDate = datetime.now().date()
+              articleDate = page.select('.article-info')[0].select('p')[0].text
 
               #category
               category = page.select('.article-info')[0].div.a.text
@@ -57,12 +57,15 @@ def scrapeLinksS2(links):
 
               #article hastags
               tags = page.select('.tags')[0] #adapted, not tested
-              tagsStr = []
+              tagsList = []
               for tag in tags:
                      if tag != ',' and tag != "\n":
-                            tagsStr.append(tag.text)
+                            tagsList.append(tag.text)
+
+              tagsString = ' - '.join(tagsList)
+
               #append to articlesContent
-              articlesContent = articlesContent.append({'link' : link, 'comments' : comments, 'date' : articleDate, 'views' : views, 'category' : category, 'hashtags' : tags}, ignore_index=True)
+              articlesContent = articlesContent.append({'link' : link, 'title': headline,  'comments' : comments, 'date' : articleDate, 'views' : views, 'category' : category, 'hashtags' : tagsString}, ignore_index=True)
 
        return(articlesContent)
 
