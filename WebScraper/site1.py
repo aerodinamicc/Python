@@ -46,7 +46,7 @@ def scrapeNewArticlesS1(site):
        return(articles)
 
 def scrapeLinksS1(links):
-       articlesContent = pd.DataFrame(columns = {'link', 'author', 'comments', 'subtitle', 'date', 'source', 'category'})
+       articlesContent = pd.DataFrame(columns = {'link', 'author', 'comments', 'title', 'subtitle', 'date', 'source', 'category'})
        for link in links:
               rq = requests.get(link)
               page = bs4.BeautifulSoup(rq.text, 'lxml')
@@ -55,18 +55,8 @@ def scrapeLinksS1(links):
               author = page.select('.author') # that returns a list of all elements under class 'author'. We expect only 1 element in return.
               authorName = author[0].img['alt']
 
-              #article text - all the p's in class 'article-text'. We expect only 1 'article-text' element
-              #article = page.select('.article-text')[0].select('p')
-              #articleText = ''
-              #for paragraphIndex in range(len(article)-2):
-              #       para = str(article[paragraphIndex])
-              #       if para.startswith('<p dir="ltr" lang="en">'):
-              #              continue
-              #       paragraph = para[3:-4] #to exclude <p></p>
-              #       paragraph = paragraph.replace('\xa0', ' ') #trash
-              #       articleText = articleText + ' ' + paragraph
-
               #headline subtitle
+              articleTitle = page.select('h1')[0].text
               articleSubtitle = page.select('h2.subtitle')[0].text
 
               #article time
@@ -86,7 +76,7 @@ def scrapeLinksS1(links):
               comments = page.select('.commentsButtonNumber')[0].text
 
               #append to articlesContent
-              articlesContent = articlesContent.append({'link' : link, 'author' : authorName, 'comments' : comments, 'subtitle' : articleSubtitle, 'date' : articleDate, 'source' : articleSource, 'category' : category}, ignore_index=True)
+              articlesContent = articlesContent.append({'link' : link, 'author' : authorName, 'comments' : comments, 'title' : articleTitle, 'subtitle' : articleSubtitle, 'date' : articleDate, 'source' : articleSource, 'category' : category}, ignore_index=True)
 
        return(articlesContent)
 

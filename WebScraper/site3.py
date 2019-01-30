@@ -72,7 +72,7 @@ def scrapeLinksS3(links):
               for tag in tags:
                      tagsList.append(tag.text)
 
-              tagsString = ', '.join(tagsList)
+              tagsString = ' - '.join(tagsList)
 
               #append to articlesContent
               articlesContent = articlesContent.append({'link' : link, 'location' : location, 'comments' : comments, 'date' : articleDate, 'views' : views, 'category' : category, 'hashtags' : tagsString}, ignore_index=True)

@@ -20,15 +20,12 @@ def scrapeNewArticlesS2(site):
 
        links = []
 
-       #top article
-       links.append(soup.select('div.main-news')[0].a['href'])
+       # most read articles
+       articles = soup.select('.additional-articles')[0].find_all('ul')[1].select('li') #0 refers to thelast news tab
 
-       #secondary articles
-       secondaryArticles = soup.select('.topic')[0:6]
-
-       for article in secondaryArticles:
+       for article in articles:
               #title = article.li.div.div.p[1] #the second p element
-              link = article.a['href']
+              link = article.h2.a['href']
               isLinkNone = link is not None
               #For a link to be added, history records should not be empty and link should not have been already added
               if isLinkNone and (len(historyRecords) == 0 or not any(link in l for l in historyRecords.link)):
@@ -39,15 +36,11 @@ def scrapeNewArticlesS2(site):
        return(articles)
 
 def scrapeLinksS2(links):
-       articlesContent = pd.DataFrame(columns = {'link', 'author', 'comments', 'date', 'source',  'hashtags', 'views'})
+       articlesContent = pd.DataFrame(columns = {'link', 'comments', 'date', 'source',  'hashtags', 'views'})
 
        for link in links:
               rq = requests.get(link)
               page = bs4.BeautifulSoup(rq.text, 'lxml')
-
-              #author
-              author = page.select('.author')[0] # that returns a list of all elements under class 'author'. We expect only 1 element in return.
-              authorName = author.a.span.text
 
               #article title
               headline = page.select('h1')[0].text
@@ -66,10 +59,10 @@ def scrapeLinksS2(links):
               tags = page.select('.tags')[0] #adapted, not tested
               tagsStr = []
               for tag in tags:
-                     if tag != ',':
+                     if tag != ',' and tag != "\n":
                             tagsStr.append(tag.text)
               #append to articlesContent
-              articlesContent = articlesContent.append({'link' : link, 'author' : authorName, 'comments' : comments, 'date' : articleDate, 'views' : views, 'category' : category, 'hashtags' : tags}, ignore_index=True)
+              articlesContent = articlesContent.append({'link' : link, 'comments' : comments, 'date' : articleDate, 'views' : views, 'category' : category, 'hashtags' : tags}, ignore_index=True)
 
        return(articlesContent)
 
