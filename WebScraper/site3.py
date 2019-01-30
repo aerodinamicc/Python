@@ -20,13 +20,11 @@ def scrapeNewArticlesS3(site):
 
        links = []
 
-       #top article
-       links.append(soup.select('div.main-news')[0].a['href'])
+       #most read articles
+       tabwidget = a = soup.select(".tabwidget")[0]
+       articles = tabwidget.select('article')
 
-       #secondary articles
-       secondaryArticles = soup.select('.topic')[0:6]
-
-       for article in secondaryArticles:
+       for article in articles:
               #title = article.li.div.div.p[1] #the second p element
               link = article.a['href']
               isLinkNone = link is not None
@@ -39,37 +37,45 @@ def scrapeNewArticlesS3(site):
        return(articles)
 
 def scrapeLinksS3(links):
-       articlesContent = pd.DataFrame(columns = {'link', 'author', 'comments', 'date', 'source',  'hashtags', 'views'})
+       articlesContent = pd.DataFrame(columns = {'link', 'location', 'category', 'comments', 'date', 'hashtags', 'views'})
 
        for link in links:
               rq = requests.get(link)
               page = bs4.BeautifulSoup(rq.text, 'lxml')
 
-              #author
-              author = page.select('.author')[0] # that returns a list of all elements under class 'author'. We expect only 1 element in return.
-              authorName = author.a.span.text
-
               #article title
-              headline = page.select('h1')[0].text
+              headline = page.select('.post-title')[0].text
+
+              #metadata
+              simpleShare = page.select('.simple-share')[0]
+              li = simpleShare.find_all('li')
+
+              #location
+              location = li[0].text
 
               #article time
-              articleDate = datetime.now().date()
+              articleDate = li[1].text
 
-              #category
-              category = page.select('.article-info')[0].div.a.text
-              views = page.select('.article-info')[0].div.p.text
+              #article views
+              views = li[2].text
 
               #article comments
-              comments = page.select('.comments')[0].span.text #adapted
+              comments = li[3].text
+
+              #category
+              breadCrumbs = page.select('.breadcrumb')[0]
+              category = breadCrumbs.find_all('span')[3].text
 
               #article hastags
-              tags = page.select('.tags')[0] #adapted, not tested
-              tagsStr = []
+              tags = page.select('.tag-link') #adapted, not tested
+              tagsList = []
               for tag in tags:
-                     if tag != ',':
-                            tagsStr.append(tag.text)
+                     tagsList.append(tag.text)
+
+              tagsString = ', '.join(tagsList)
+
               #append to articlesContent
-              articlesContent = articlesContent.append({'link' : link, 'author' : authorName, 'comments' : comments, 'date' : articleDate, 'views' : views, 'category' : category, 'hashtags' : tags}, ignore_index=True)
+              articlesContent = articlesContent.append({'link' : link, 'location' : location, 'comments' : comments, 'date' : articleDate, 'views' : views, 'category' : category, 'hashtags' : tagsString}, ignore_index=True)
 
        return(articlesContent)
 
