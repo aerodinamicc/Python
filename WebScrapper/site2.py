@@ -28,7 +28,7 @@ def scrapeNewArticlesS2(site):
               link = article.h2.a['href']
               isLinkNone = link is not None
               #For a link to be added, history records should not be empty and link should not have been already added
-              if isLinkNone and (len(historyRecords) == 0 or not any(link in l for l in historyRecords.link)):
+              if isLinkNone and (len(historyRecords) == 0 or not link in historyRecords.link.values):
                      links.append(link)
 
        articles = scrapeLinksS2(links) ###!!!

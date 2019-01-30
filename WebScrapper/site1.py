@@ -23,7 +23,7 @@ def scrapeNewArticlesS1(site):
        topNews = soup.select('.gtm-TopNews-click')
 
        for element in topNews:
-              title = element.img
+              title = element.img['alt']
               link = element['href']
               isTitleNone = title is not None
               if isTitleNone:
@@ -33,10 +33,10 @@ def scrapeNewArticlesS1(site):
                             links.append(link)
                      #for any subsequent update of the db
                      else:
-                            if not title.isin(historyRecords.title) and not link.isin(historyRecords.link):
+                            if not title in historyRecords.title.values and not link in historyRecords.link.values:
                                    titles.append(title['alt'])
                                    links.append(link)
-                            elif not title.isin(historyRecords.title) and link.isin(historyRecords.link):
+                            elif not title in historyRecords.title.values and link in historyRecords.link.values:
                                    linkIndex = historyRecords.link.index(link)
                                    historyRecords['title'][linkIndex] = title
 
