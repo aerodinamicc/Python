@@ -12,6 +12,10 @@ def loadDb(siteIndex):
 
        if os.path.exists(dbString):
               news = pd.read_csv(dbString, encoding = 'utf-16')
+              
+              if 'Unnamed: 0' in news.columns:
+                     news.drop(['Unnamed: 0'], axis = 1, inplace = True)
+
               return(news)
        
        return pd.DataFrame()

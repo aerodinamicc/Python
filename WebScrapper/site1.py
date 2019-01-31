@@ -14,7 +14,7 @@ def gatherNewArticles(site, db):
 
        for element in topNews:
               link = element['href']
-              title = element.p #something specific, which if not done whould result in duplicatingof the article
+              title = element.p #something specific, which if not done whould result in duplicating of the article
               if title is not None and (db.empty or (not db.empty and not link in db.link.values)):
                      links.append(link)
 
