@@ -28,32 +28,33 @@ def crawlLinks(links):
 
        for link in links:
               rq = requests.get(link)
-              page = bs4.BeautifulSoup(rq.text, 'lxml')
+              if rq.status_code == 200:
+                     page = bs4.BeautifulSoup(rq.text, 'lxml')
 
-              headline = page.select('h1')[0].text
-              articleDate = page.select('.article-info')[0].select('p')[0].text
-              systemDate = datetime.now().date()
-              category = page.select('.article-info')[0].div.a.text
-              views = page.select('.article-info')[0].div.p.text
-              comments = page.select('.comments')[0].span.text
-              tags = page.select('.tags')[0] #adapted, not tested
-              tagsList = []
-              for tag in tags:
-                     if tag != ',' and tag != "\n":
-                            tagsList.append(tag.text)
+                     headline = page.select('h1')[0].text
+                     articleDate = page.select('.article-info')[0].select('p')[0].text
+                     systemDate = datetime.now().date()
+                     category = page.select('.article-info')[0].div.a.text
+                     views = page.select('.article-info')[0].div.p.text
+                     comments = page.select('.comments')[0].span.text
+                     tags = page.select('.tags')[0] #adapted, not tested
+                     tagsList = []
+                     for tag in tags:
+                            if tag != ',' and tag != "\n":
+                                   tagsList.append(tag.text)
 
-              tagsString = ' - '.join(tagsList)
+                     tagsString = ' - '.join(tagsList)
 
-              #append to articlesContent
-              articlesContent = articlesContent.append({'link' : link,
-                                                        'title': headline,
-                                                        'comments' : comments,
-                                                        'date' : articleDate,
-                                                        'views' : views,
-                                                        'category' : category,
-                                                        'hashtags' : tagsString,
-                                                        'systemDate' : systemDate},
-                                                        ignore_index=True)
+                     #append to articlesContent
+                     articlesContent = articlesContent.append({'link' : link,
+                                                               'title': headline,
+                                                               'comments' : comments,
+                                                               'date' : articleDate,
+                                                               'views' : views,
+                                                               'category' : category,
+                                                               'hashtags' : tagsString,
+                                                               'systemDate' : systemDate},
+                                                               ignore_index=True)
 
        return(articlesContent)
 

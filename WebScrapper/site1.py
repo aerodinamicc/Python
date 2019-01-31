@@ -26,33 +26,34 @@ def crawlLinks(links):
        articlesContent = pd.DataFrame(columns = {'link', 'author', 'comments', 'title', 'subtitle', 'date', 'source', 'category', 'systemDate'})
        for link in links:
               rq = requests.get(link)
-              page = bs4.BeautifulSoup(rq.text, 'lxml')
+              if rq.status_code == 200:
+                     page = bs4.BeautifulSoup(rq.text, 'lxml')
 
-              authorName = page.select('.author')[0].img['alt']
-              articleTitle = page.select('h1')[0].text
-              articleSubtitle = page.select('h2.subtitle')[0].text
-              articleDate =  page.select('.article-time')[0].text
-              systemDate = datetime.now().date()
-              source = page.select('div.article-info-bottom')[0].span
-              source = str(source)
-              articleSource = ''
-              if source is not None:
-                     articleSource = source[6:-7]
+                     authorName = page.select('.author')[0].img['alt']
+                     articleTitle = page.select('h1')[0].text
+                     articleSubtitle = page.select('h2.subtitle')[0].text
+                     articleDate =  page.select('.article-time')[0].text
+                     systemDate = datetime.now().date()
+                     source = page.select('div.article-info-bottom')[0].span
+                     source = str(source)
+                     articleSource = ''
+                     if source is not None:
+                            articleSource = source[6:-7]
 
-              category = page.select('div.article-category')[0].a.text
+                     category = page.select('div.article-category')[0].a.text
 
-              comments = page.select('.commentsButtonNumber')[0].text
+                     comments = page.select('.commentsButtonNumber')[0].text
 
-              #append to articlesContent
-              articlesContent = articlesContent.append({'link' : link,
-                                                        'author' : authorName,
-                                                        'comments' : comments,
-                                                        'title' : articleTitle,
-                                                        'subtitle' : articleSubtitle,
-                                                        'date' : articleDate,
-                                                        'source' : articleSource,
-                                                        'category' : category,
-                                                        'systemDate' : systemDate},
-                                                        ignore_index=True)
+                     #append to articlesContent
+                     articlesContent = articlesContent.append({'link' : link,
+                                                               'author' : authorName,
+                                                               'comments' : comments,
+                                                               'title' : articleTitle,
+                                                               'subtitle' : articleSubtitle,
+                                                               'date' : articleDate,
+                                                               'source' : articleSource,
+                                                               'category' : category,
+                                                               'systemDate' : systemDate},
+                                                               ignore_index=True)
 
        return(articlesContent)
