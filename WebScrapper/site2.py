@@ -13,9 +13,7 @@ def gatherNewArticles(site, db):
        articles = soup.select('.additional-articles')[0].find_all('ul')[1].select('li') #0 refers to thelast news tab
 
        for article in articles:
-              #title = article.li.div.div.p[1] #the second p element
               link = article.h2.a['href']
-              #isLinkNone = link is not None
               if db.empty or (not db.empty and not link in db.link.values):
                      links.append(link)
 
@@ -36,6 +34,7 @@ def crawlLinks(links):
                      systemDate = datetime.now().date()
                      category = page.select('.article-info')[0].div.a.text
                      views = page.select('.article-info')[0].div.p.text
+                     views = views.replace("Прегледи: ", "")
                      comments = page.select('.comments')[0].span.text
                      tags = page.select('.tags')[0] #adapted, not tested
                      tagsList = []

@@ -39,7 +39,9 @@ def crawlLinks(links):
                      articleDate = li[1].text
                      systemDate = datetime.now().date()
                      views = li[2].text
+                     views = views.replace(" прочита", "")
                      comments = li[3].text
+                     comments = comments.replace(" коментара", "")
                      breadCrumbs = page.select('.breadcrumb')[0]
                      category = breadCrumbs.find_all('span')[3].text
                      #article hastags

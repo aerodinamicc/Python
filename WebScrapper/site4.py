@@ -15,7 +15,6 @@ def gatherNewArticles(site, db):
 
        for article in articles:
               link = article.h2.a['href']
-              #isLinkNone = link is not None
               if db.empty or (not db.empty and not link in db.link.values):
                      links.append(link)
 

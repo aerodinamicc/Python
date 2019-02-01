@@ -12,7 +12,7 @@ def loadDb(siteIndex):
 
        if os.path.exists(dbString):
               news = pd.read_csv(dbString, encoding = 'utf-16')
-              
+
               if 'Unnamed: 0' in news.columns:
                      news.drop(['Unnamed: 0'], axis = 1, inplace = True)
 
@@ -22,11 +22,12 @@ def loadDb(siteIndex):
 
 def saveDb(siteIndex, newArticles, db):
        dbString = "S%s.csv" % (siteIndex)
+       print("Site %s has %s new articles." % (siteIndex, len(newArticles)))
 
        if os.path.exists(dbString):
               #if there are new article
               if not newArticles.empty:
-                     news = db.append(newArticles, ignore_index = True)
+                     news = db.append(newArticles, sort=True, ignore_index = True)
                      news.to_csv(dbString, sep=',', encoding = 'utf-16', index = False)
               #in any other case(no new articles/update)
               elif newArticles.empty and not db.empty:
@@ -82,9 +83,10 @@ def crawlSite(siteIndex, webPage):
        saveDb(siteIndex, newArticles, db)
 
 def iterateSites():
-       os.chdir('WebScrapper')
+       print("Newspaper boy dispatched...")
+       #print(os.chdir("WebScrapper"))
        sites = open('sites.txt', 'r')
-       print(os.getcwd())
+       #print(os.getcwd())
 
        for siteIndex in range(1, 5):
               webPage = ''
@@ -97,7 +99,7 @@ def iterateSites():
 
 iterateSites()
 
-print('end')
+print('Stay classy San Diego.')
 #scheduler = BlockingScheduler()
 #scheduler.add_job(scrapeAll, 'interval', hours=12)
 #scheduler.start()

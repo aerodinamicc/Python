@@ -8,14 +8,12 @@ def gatherNewArticles(site, db):
        request = requests.get(site)
        soup = bs4.BeautifulSoup(request.text, 'lxml')
 
-       titles = []
        links = []
        topNews = soup.select('.gtm-TopNews-click')
 
        for element in topNews:
               link = element['href']
-              title = element.p #something specific, which if not done whould result in duplicating of the article
-              if title is not None and (db.empty or (not db.empty and not link in db.link.values)):
+              if link not in links and (db.empty or (not db.empty and not link in db.link.values)):
                      links.append(link)
 
        newArticles = crawlLinks(links)
