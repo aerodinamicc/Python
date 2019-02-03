@@ -37,7 +37,7 @@ def crawlLinks(links):
                      li = simpleShare.find_all('li')
                      location = li[0].text
                      articleDate = li[1].text
-                     systemDate = datetime.now().date()
+                     systemDate = datetime.now()
                      views = li[2].text
                      views = views.replace(" прочита", "")
                      comments = li[3].text

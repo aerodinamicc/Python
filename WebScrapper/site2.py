@@ -31,7 +31,7 @@ def crawlLinks(links):
 
                      headline = page.select('h1')[0].text
                      articleDate = page.select('.article-info')[0].select('p')[0].text
-                     systemDate = datetime.now().date()
+                     systemDate = datetime.now()
                      category = page.select('.article-info')[0].div.a.text
                      views = page.select('.article-info')[0].div.p.text
                      views = views.replace("Прегледи: ", "")

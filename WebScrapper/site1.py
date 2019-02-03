@@ -21,17 +21,16 @@ def gatherNewArticles(site, db):
        return(newArticles)
 
 def crawlLinks(links):
-       articlesContent = pd.DataFrame(columns = {'link', 'author', 'comments', 'title', 'subtitle', 'date', 'source', 'category', 'systemDate'})
+       articlesContent = pd.DataFrame(columns = {'link', 'comments', 'title', 'subtitle', 'date', 'source', 'category', 'systemDate'})
        for link in links:
               rq = requests.get(link)
               if rq.status_code == 200:
                      page = bs4.BeautifulSoup(rq.text, 'lxml')
 
-                     authorName = page.select('.author')[0].img['alt']
                      articleTitle = page.select('h1')[0].text
                      articleSubtitle = page.select('h2.subtitle')[0].text
                      articleDate =  page.select('.article-time')[0].text
-                     systemDate = datetime.now().date()
+                     systemDate = datetime.now()
                      source = page.select('div.article-info-bottom')[0].span
                      source = str(source)
                      articleSource = ''
@@ -44,7 +43,6 @@ def crawlLinks(links):
 
                      #append to articlesContent
                      articlesContent = articlesContent.append({'link' : link,
-                                                               'author' : authorName,
                                                                'comments' : comments,
                                                                'title' : articleTitle,
                                                                'subtitle' : articleSubtitle,
