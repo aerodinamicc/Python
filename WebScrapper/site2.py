@@ -22,7 +22,8 @@ def gatherNewArticles(site, db):
        return(articles)
 
 def crawlLinks(links):
-       articlesContent = pd.DataFrame(columns = {'link', 'title', 'comments', 'date', 'hashtags', 'views', 'category', 'systemDate'})
+       articlesContent = pd.DataFrame(columns = {'link', 'title', 'comments', 'date', 'hashtags', 'views', 'category', 'systemDate',
+                                                 '3daysComments', '1weekComments', '2weeksComments', '3daysViews', '1weekViews', '2weeksViews'})
 
        for link in links:
               rq = requests.get(link)
@@ -31,7 +32,7 @@ def crawlLinks(links):
 
                      headline = page.select('h1')[0].text
                      articleDate = page.select('.article-info')[0].select('p')[0].text
-                     systemDate = datetime.now()
+                     systemDate = datetime.now().date()
                      category = page.select('.article-info')[0].div.a.text
                      views = page.select('.article-info')[0].div.p.text
                      views = views.replace("Прегледи: ", "")

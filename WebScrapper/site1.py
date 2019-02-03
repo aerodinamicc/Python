@@ -21,7 +21,8 @@ def gatherNewArticles(site, db):
        return(newArticles)
 
 def crawlLinks(links):
-       articlesContent = pd.DataFrame(columns = {'link', 'comments', 'title', 'subtitle', 'date', 'source', 'category', 'systemDate'})
+       articlesContent = pd.DataFrame(columns = {'link', 'comments', 'title', 'subtitle', 'date', 'source', 'category', 'systemDate',
+                                                 '3daysComments', '1weekComments', '2weeksComments'})
        for link in links:
               rq = requests.get(link)
               if rq.status_code == 200:
@@ -30,7 +31,7 @@ def crawlLinks(links):
                      articleTitle = page.select('h1')[0].text
                      articleSubtitle = page.select('h2.subtitle')[0].text
                      articleDate =  page.select('.article-time')[0].text
-                     systemDate = datetime.now()
+                     systemDate = datetime.now().date()
                      source = page.select('div.article-info-bottom')[0].span
                      source = str(source)
                      articleSource = ''

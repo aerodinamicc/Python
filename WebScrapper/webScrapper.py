@@ -36,17 +36,41 @@ def saveDb(siteIndex, newArticles, db):
               newArticles.to_csv(dbString, sep=',', encoding = 'utf-16')
 
 def updateDb(siteIndex, webPage, db):
-       db.systemDate = db.systemDate.apply(lambda x: datetime.strptime(x, '%Y-%m-%d').date())
+       isSiteOne = siteIndex == 1
+
+       db.systemDate = db.systemDate.apply(lambda x: datetime.strptime(x, '%Y-%m-%d').date() if len(x) < 11 else
+                                                datetime.strptime(x, '%Y-%m-%d %H:%M:%S.%f').date())
        db['timeSincePublishing'] = (db.systemDate - datetime.now().date()).apply(lambda x: abs(x.days))
-       sub = db[(db['timeSincePublishing'] > 13) & (db['timeSincePublishing'] < 15)]
-       sub = updateLinks(siteIndex, sub.link.values)
+
+       #3 days old
+       threeDaysOld = db[(db['timeSincePublishing'] > 2) & (db['timeSincePublishing'] < 4)]
+       threeDaysOld = updateLinks(siteIndex, threeDaysOld.link.values)
+
+       for i in threeDaysOld.index:
+              db.loc['3daysComments',i] = threeDaysOld.loc['comments',i]
+              if not isSiteOne:
+                     db.loc['3daysViews',i] = threeDaysOld.loc['views',i]
+
+       #7 days old
+       oneWeekOld = db[(db['timeSincePublishing'] > 6) & (db['timeSincePublishing'] < 8)]
+       oneWeekOld = updateLinks(siteIndex, oneWeekOld.link.values)
+
+       for i in oneWeekOld.index:
+              db.loc['1weekComments',i] = oneWeekOld.loc['comments',i]
+              if not isSiteOne:
+                     db.loc['1weekViews',i] = oneWeekOld.loc['views',i]
+
+       #14 days old
+       twoWeeksOld = db[(db['timeSincePublishing'] > 13) & (db['timeSincePublishing'] < 15)]
+       twoWeeksOld = updateLinks(siteIndex, twoWeeksOld.link.values)
        
-       for i in sub.index:
-              db.loc['comments',i] = sub.loc['comments',i]
-              db.loc['views',i] = sub.loc['views',i]
+       for i in twoWeeksOld.index:
+              db.loc['2weeksComments',i] = twoWeeksOld.loc['comments',i]
+              if not isSiteOne:
+                     db.loc['2weeksViews',i] = twoWeeksOld.loc['views',i]
 
        db.drop(['timeSincePublishing'], axis=1, inplace = True)
-
+ 
        return(db)
 
 def updateLinks(siteIndex, links):

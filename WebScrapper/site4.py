@@ -23,7 +23,8 @@ def gatherNewArticles(site, db):
        return(articles)
 
 def crawlLinks(links):
-       articlesContent = pd.DataFrame(columns = {'link', 'title', 'category', 'comments', 'date', 'views', 'systemDate'})
+       articlesContent = pd.DataFrame(columns = {'link', 'title', 'category', 'comments', 'date', 'views', 'systemDate',
+                                                 '3daysComments', '1weekComments', '2weeksComments', '3daysViews', '1weekViews', '2weeksViews'})
 
        for link in links:
               rq = requests.get(link)
@@ -32,7 +33,7 @@ def crawlLinks(links):
                      headline = page.select('.text-wrapper')[0].h2.text
                      meta = page.select('.additional-info')[0]
                      articleDate = meta.select('.timestamp')[0].text
-                     systemDate = datetime.now()
+                     systemDate = datetime.now().date()
                      views = meta.select('#articleViews')[0].text
                      comments = meta.select('.comments')[0].text
                      #category

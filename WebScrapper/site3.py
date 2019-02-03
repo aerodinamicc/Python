@@ -23,7 +23,8 @@ def gatherNewArticles(site, db):
        return(articles)
 
 def crawlLinks(links):
-       articlesContent = pd.DataFrame(columns = {'link', 'title', 'location', 'category', 'comments', 'date', 'hashtags', 'views', 'systemDate'})
+       articlesContent = pd.DataFrame(columns = {'link', 'title', 'location', 'category', 'comments', 'date', 'hashtags', 'views', 'systemDate',
+                                                 '3daysComments', '1weekComments', '2weeksComments', '3daysViews', '1weekViews', '2weeksViews'})
 
        for link in links:
               rq = requests.get(link)
@@ -37,7 +38,7 @@ def crawlLinks(links):
                      li = simpleShare.find_all('li')
                      location = li[0].text
                      articleDate = li[1].text
-                     systemDate = datetime.now()
+                     systemDate = datetime.now().date()
                      views = li[2].text
                      views = views.replace(" прочита", "")
                      comments = li[3].text
