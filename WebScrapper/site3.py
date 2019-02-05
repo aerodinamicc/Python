@@ -66,3 +66,27 @@ def crawlLinks(links):
                                                                ignore_index=True)
 
        return(articlesContent)
+
+def updateLinks(links):
+       updatedContent = pd.DataFrame(columns = {'link', 'views', 'comments'})
+
+       for link in links:
+              rq = requests.get(link)
+              if rq.status_code == 200:
+                     page = bs4.BeautifulSoup(rq.text, 'lxml')
+
+                     #metadata
+                     simpleShare = page.select('.simple-share')[0]
+                     li = simpleShare.find_all('li')
+                     views = li[2].text
+                     views = views.replace(" прочита", "")
+                     comments = li[3].text
+                     comments = comments.replace(" коментара", "")
+                     
+                     #append to articlesContent
+                     updatedContent = updatedContent.append({'link' : link,
+                                                               'views' : views,
+                                                               'comments' : comments},
+                                                               ignore_index=True)
+
+       return(updatedContent)

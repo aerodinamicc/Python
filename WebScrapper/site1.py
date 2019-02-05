@@ -54,3 +54,19 @@ def crawlLinks(links):
                                                                ignore_index=True)
 
        return(articlesContent)
+
+def updateLinks(links):
+       updatedContent = pd.DataFrame(columns = {'link', 'comments'})
+
+       for link in links:
+              rq = requests.get(link)
+              if rq.status_code == 200:
+                     page = bs4.BeautifulSoup(rq.text, 'lxml')
+                     comments = page.select('.commentsButtonNumber')[0].text
+                     
+                     #append to articlesContent
+                     updatedContent = updatedContent.append({'link' : link,
+                                                               'comments' : comments},
+                                                               ignore_index=True)
+
+       return(updatedContent)

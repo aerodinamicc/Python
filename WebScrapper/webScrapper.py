@@ -1,6 +1,7 @@
 #from apscheduler.schedulers.blocking import BlockingScheduler
 import os
 import pandas as pd
+import numpy as np
 from datetime import datetime
 import site1
 import site2
@@ -25,7 +26,7 @@ def saveDb(siteIndex, newArticles, db):
        print("Site %s has %s new articles." % (siteIndex, len(newArticles)))
 
        if os.path.exists(dbString):
-              #if there are new article
+              #if there are new articles
               if not newArticles.empty:
                      news = db.append(newArticles, sort=True, ignore_index = True)
                      news.to_csv(dbString, sep=',', encoding = 'utf-16', index = False)
@@ -42,47 +43,54 @@ def updateDb(siteIndex, webPage, db):
                                                 datetime.strptime(x, '%Y-%m-%d %H:%M:%S.%f').date())
        db['timeSincePublishing'] = (db.systemDate - datetime.now().date()).apply(lambda x: abs(x.days))
 
-       #3 days old
-       threeDaysOld = db[(db['timeSincePublishing'] > 2) & (db['timeSincePublishing'] < 4)]
+       #3 days old, last condition is because I only want to update what has not yet been updated (comments and views are equally reliable)
+       threeDaysOld = db[(db['timeSincePublishing'] > 2) & (db['timeSincePublishing'] < 4) & (np.isnan(db['3daysComments'].values))].reset_index().rename(columns = {'index' : 'position'})
+       articlesIndices = threeDaysOld.position.values
        threeDaysOld = updateLinks(siteIndex, threeDaysOld.link.values)
+       threeDaysOld['position'] = articlesIndices
 
-       for i in threeDaysOld.index:
-              db.loc['3daysComments',i] = threeDaysOld.loc['comments',i]
+       for i in threeDaysOld.position:
+              db.loc[i, '3daysComments'] = threeDaysOld.comments[threeDaysOld.position == i].values[0]
               if not isSiteOne:
-                     db.loc['3daysViews',i] = threeDaysOld.loc['views',i]
+                     db.loc[i, '3daysViews'] = threeDaysOld.views[threeDaysOld.position == i].values[0]
 
        #7 days old
-       oneWeekOld = db[(db['timeSincePublishing'] > 6) & (db['timeSincePublishing'] < 8)]
+       oneWeekOld = db[(db['timeSincePublishing'] > 6) & (db['timeSincePublishing'] < 8) & (np.isnan(db['1weekComments'].values))].reset_index().rename(columns = {'index' : 'position'})
+       articlesIndices = oneWeekOld.position.values
        oneWeekOld = updateLinks(siteIndex, oneWeekOld.link.values)
+       oneWeekOld['position'] = articlesIndices
 
-       for i in oneWeekOld.index:
-              db.loc['1weekComments',i] = oneWeekOld.loc['comments',i]
+       for i in oneWeekOld.position:
+              db.loc[i, '1weekComments'] = oneWeekOld.comments[threeDaysOld.position == i].values[0]
               if not isSiteOne:
-                     db.loc['1weekViews',i] = oneWeekOld.loc['views',i]
+                     db.loc[i, '1weekViews'] = oneWeekOld.views[threeDaysOld.position == i].values[0]
 
        #14 days old
-       twoWeeksOld = db[(db['timeSincePublishing'] > 13) & (db['timeSincePublishing'] < 15)]
+       twoWeeksOld = db[(db['timeSincePublishing'] > 13) & (db['timeSincePublishing'] < 15) & (np.isnan(db['2weeksComments'].values))].reset_index().rename(columns = {'index' : 'position'})
+       articlesIndices = twoWeeksOld.position.values
        twoWeeksOld = updateLinks(siteIndex, twoWeeksOld.link.values)
+       twoWeeksOld['position'] = articlesIndices
        
-       for i in twoWeeksOld.index:
-              db.loc['2weeksComments',i] = twoWeeksOld.loc['comments',i]
+       for i in twoWeeksOld.position:
+              db.loc[i, '2weeksComments'] = twoWeeksOld.comments[threeDaysOld.position == i].values[0]
               if not isSiteOne:
-                     db.loc['2weeksViews',i] = twoWeeksOld.loc['views',i]
+                     db.loc[i, '2weeksViews'] = twoWeeksOld.views[threeDaysOld.position == i].values[0]
 
        db.drop(['timeSincePublishing'], axis=1, inplace = True)
+       print("Site %s has %s articles updated." % (siteIndex, len(threeDaysOld) + len(oneWeekOld) + len(twoWeeksOld)))
  
        return(db)
 
 def updateLinks(siteIndex, links):
        newData = pd.DataFrame()
        if siteIndex == 1:
-              newData = site1.crawlLinks(links)
+              newData = site1.updateLinks(links)
        elif siteIndex == 2:
-              newData = site2.crawlLinks(links)
+              newData = site2.updateLinks(links)
        elif siteIndex == 3:
-              newData = site3.crawlLinks(links)
+              newData = site3.updateLinks(links)
        elif siteIndex == 4:
-              newData = site4.crawlLinks(links)
+              newData = site4.updateLinks(links)
        
        return(newData)
 
@@ -108,9 +116,8 @@ def crawlSite(siteIndex, webPage):
 
 def iterateSites():
        print("Newspaper boy dispatched...")
-       #print(os.chdir("WebScrapper"))
+       #os.chdir("WebScrapper")
        sites = open('sites.txt', 'r')
-       #print(os.getcwd())
 
        for siteIndex in range(1, 5):
               webPage = ''
