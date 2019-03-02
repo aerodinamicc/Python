@@ -33,7 +33,11 @@ def crawlLinks(links):
                      headline = page.select('.text-wrapper')[0].h2.text
                      meta = page.select('.additional-info')[0]
                      articleDate = meta.select('.timestamp')[0].text
-                     systemDate = datetime.now().date()
+                     systemDate = datetime.now()
+                     
+                     if len(meta.select('#articleViews')) == 0: #if == 0 then it is a survey and not an article
+                            continue
+
                      views = meta.select('#articleViews')[0].text
                      comments = meta.select('.comments')[0].text
                      #category

@@ -31,12 +31,11 @@ def crawlLinks(links):
                      articleTitle = page.select('h1')[0].text
                      articleSubtitle = page.select('h2.subtitle')[0].text
                      articleDate =  page.select('.article-time')[0].text
-                     systemDate = datetime.now().date()
-                     source = page.select('div.article-info-bottom')[0].span
-                     source = str(source)
+                     systemDate = datetime.now()
+                     source = page.select('div.article-info-bottom')
                      articleSource = ''
-                     if source is not None:
-                            articleSource = source[6:-7]
+                     if len(source) > 0:
+                            source = str(source[0].span)[6:-7]
 
                      category = page.select('div.article-category')[0].a.text
 

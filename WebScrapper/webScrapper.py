@@ -23,7 +23,10 @@ def loadDb(siteIndex):
 
 def saveDb(siteIndex, newArticles, db):
        dbString = "S%s.csv" % (siteIndex)
-       print("Site %s has %s new articles." % (siteIndex, len(newArticles)))
+       scraped_printout = "Site %s has %s new articles." % (siteIndex, len(newArticles))
+       #print(scraped_printout)
+       global message
+       message = message + scraped_printout + "\n"
 
        if os.path.exists(dbString):
               #if there are new articles
@@ -39,9 +42,10 @@ def saveDb(siteIndex, newArticles, db):
 def updateDb(siteIndex, webPage, db):
        isSiteOne = siteIndex == 1
 
-       db.systemDate = db.systemDate.apply(lambda x: datetime.strptime(x, '%Y-%m-%d').date() if len(x) < 11 else
-                                                datetime.strptime(x, '%Y-%m-%d %H:%M:%S.%f').date())
-       db['timeSincePublishing'] = (db.systemDate - datetime.now().date()).apply(lambda x: abs(x.days))
+       db.systemDate = db.systemDate.apply(lambda x: datetime.strptime(x, '%Y-%m-%d') if len(x) < 11 else
+                                                datetime.strptime(x, '%Y-%m-%d %H:%M:%S.%f'))
+       #only if the 3,7,14 days have passed
+       db['timeSincePublishing'] = (db.systemDate - datetime.now()).apply(lambda x: abs(x.days))
 
        #3 days old, last condition is because I only want to update what has not yet been updated (comments and views are equally reliable)
        threeDaysOld = db[(db['timeSincePublishing'] > 2) & (db['timeSincePublishing'] < 4) & (np.isnan(db['3daysComments'].values))].reset_index().rename(columns = {'index' : 'position'})
@@ -61,9 +65,9 @@ def updateDb(siteIndex, webPage, db):
        oneWeekOld['position'] = articlesIndices
 
        for i in oneWeekOld.position:
-              db.loc[i, '1weekComments'] = oneWeekOld.comments[threeDaysOld.position == i].values[0]
+              db.loc[i, '1weekComments'] = oneWeekOld.comments[oneWeekOld.position == i].values[0]
               if not isSiteOne:
-                     db.loc[i, '1weekViews'] = oneWeekOld.views[threeDaysOld.position == i].values[0]
+                     db.loc[i, '1weekViews'] = oneWeekOld.views[oneWeekOld.position == i].values[0]
 
        #14 days old
        twoWeeksOld = db[(db['timeSincePublishing'] > 13) & (db['timeSincePublishing'] < 15) & (np.isnan(db['2weeksComments'].values))].reset_index().rename(columns = {'index' : 'position'})
@@ -72,12 +76,15 @@ def updateDb(siteIndex, webPage, db):
        twoWeeksOld['position'] = articlesIndices
        
        for i in twoWeeksOld.position:
-              db.loc[i, '2weeksComments'] = twoWeeksOld.comments[threeDaysOld.position == i].values[0]
+              db.loc[i, '2weeksComments'] = twoWeeksOld.comments[twoWeeksOld.position == i].values[0]
               if not isSiteOne:
-                     db.loc[i, '2weeksViews'] = twoWeeksOld.views[threeDaysOld.position == i].values[0]
+                     db.loc[i, '2weeksViews'] = twoWeeksOld.views[twoWeeksOld.position == i].values[0]
 
        db.drop(['timeSincePublishing'], axis=1, inplace = True)
-       print("Site %s has %s articles updated." % (siteIndex, len(threeDaysOld) + len(oneWeekOld) + len(twoWeeksOld)))
+       updated_printout = "Site %s has %s articles updated." % (siteIndex, len(threeDaysOld) + len(oneWeekOld) + len(twoWeeksOld))
+       #print(updated_printout)
+       global message
+       message = message + updated_printout + "\n"
  
        return(db)
 
@@ -115,22 +122,41 @@ def crawlSite(siteIndex, webPage):
        saveDb(siteIndex, newArticles, db)
 
 def iterateSites():
-       print("Newspaper boy dispatched...")
-       #os.chdir("WebScrapper")
-       sites = open('sites.txt', 'r')
+       start_message = "Newspaper boy dispatched..."
+       print(start_message)
+       global message
+       message = message + start_message + "\n"
 
-       for siteIndex in range(1, 5):
-              webPage = ''
-              if siteIndex != 4:
-                     webPage = sites.readlines(siteIndex)[0][:-2] # -2 helps clean \n at the end of each line 
-              else:
-                     webPage = sites.readlines(siteIndex)[0]
+       abspath = os.path.abspath(__file__)
+       dname = os.path.dirname(abspath)
+       os.chdir(dname)
+       with open('sites.txt', 'r') as sites:
+              for siteIndex in range(1, 5):
+                     webPage = ''
+                     if siteIndex != 4:
+                            webPage = sites.readlines(siteIndex)[0][:-2] # -2 helps clean \n at the end of each line 
+                     else:
+                            webPage = sites.readlines(siteIndex)[0]
 
-              crawlSite(siteIndex, webPage)
+                     crawlSite(siteIndex, webPage)
 
+message = ""
 iterateSites()
 
-print('Stay classy San Diego.')
-#scheduler = BlockingScheduler()
-#scheduler.add_job(scrapeAll, 'interval', hours=12)
-#scheduler.start()
+final_message = 'Stay classy San Diego.'
+print(final_message)
+message = message + final_message
+
+import smtplib, ssl
+
+with open('mail.txt', 'r') as mail:
+       elements = mail.read().split("\n")
+       sender = elements[0]
+       password = elements[1]
+       receiver = elements[2]
+
+       context = ssl.create_default_context()
+       with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as server:
+              server.login(sender, password)
+              server.sendmail(sender, receiver, message)
+

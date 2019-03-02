@@ -32,16 +32,17 @@ def crawlLinks(links):
 
                      headline = page.select('h1')[0].text
                      articleDate = page.select('.article-info')[0].select('p')[0].text
-                     systemDate = datetime.now().date()
+                     systemDate = datetime.now()
                      category = page.select('.article-info')[0].div.a.text
                      views = page.select('.article-info')[0].div.p.text
                      views = views.replace("Прегледи: ", "")
                      comments = page.select('.comments')[0].span.text
-                     tags = page.select('.tags')[0] #adapted, not tested
+                     tags = page.select('.tags') #adapted, not tested
                      tagsList = []
-                     for tag in tags:
-                            if tag != ',' and tag != "\n":
-                                   tagsList.append(tag.text)
+                     if len(tags) > 0:
+                            for tag in tags[0]:
+                                   if tag != ',' and tag != "\n":
+                                          tagsList.append(tag.text)
 
                      tagsString = ' - '.join(tagsList)
 

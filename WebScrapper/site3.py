@@ -38,13 +38,18 @@ def crawlLinks(links):
                      li = simpleShare.find_all('li')
                      location = li[0].text
                      articleDate = li[1].text
-                     systemDate = datetime.now().date()
+                     systemDate = datetime.now()
                      views = li[2].text
                      views = views.replace(" прочита", "")
                      comments = li[3].text
                      comments = comments.replace(" коментара", "")
                      breadCrumbs = page.select('.breadcrumb')[0]
-                     category = breadCrumbs.find_all('span')[3].text
+                     category = breadCrumbs.find_all('span')
+                     if len(category) > 3:
+                            category = category[3].text
+                     else:
+                            category = ""
+
                      #article hastags
                      tags = page.select('.tag-link') #adapted, not tested
                      tagsList = []
@@ -69,7 +74,6 @@ def crawlLinks(links):
 
 def updateLinks(links):
        updatedContent = pd.DataFrame(columns = {'link', 'views', 'comments'})
-
        for link in links:
               rq = requests.get(link)
               if rq.status_code == 200:
@@ -78,10 +82,14 @@ def updateLinks(links):
                      #metadata
                      simpleShare = page.select('.simple-share')[0]
                      li = simpleShare.find_all('li')
-                     views = li[2].text
-                     views = views.replace(" прочита", "")
-                     comments = li[3].text
-                     comments = comments.replace(" коментара", "")
+                     if len(li) < 4: #IF THE ARTICLE has been deleted and the rq.tet is the website's main page
+                            views = 'NaN'
+                            comments = 'NaN'
+                     else:
+                            views = li[2].text
+                            views = views.replace(" прочита", "")
+                            comments = li[3].text
+                            comments = comments.replace(" коментара", "")
                      
                      #append to articlesContent
                      updatedContent = updatedContent.append({'link' : link,
