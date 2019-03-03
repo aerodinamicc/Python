@@ -35,7 +35,7 @@ def crawlLinks(links):
                      systemDate = datetime.now()
                      category = page.select('.article-info')[0].div.a.text
                      views = page.select('.article-info')[0].div.p.text
-                     views = views.replace("Прегледи: ", "")
+                     views = views.split(" ")[1]
                      comments = page.select('.comments')[0].span.text
                      tags = page.select('.tags') #adapted, not tested
                      tagsList = []
@@ -67,7 +67,7 @@ def updateLinks(links):
               if rq.status_code == 200:
                      page = bs4.BeautifulSoup(rq.text, 'lxml')
                      views = page.select('.article-info')[0].div.p.text
-                     views = views.replace("Прегледи: ", "")
+                     views = views.split(" ")[1]
                      comments = page.select('.comments')[0].span.text
                      
                      #append to articlesContent

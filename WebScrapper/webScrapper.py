@@ -21,12 +21,11 @@ def loadDb(siteIndex):
        
        return pd.DataFrame()
 
-def saveDb(siteIndex, newArticles, db):
+def saveDb(siteIndex, newArticles, db, webPage):
        dbString = "S%s.csv" % (siteIndex)
-       scraped_printout = "Site %s has %s new articles." % (siteIndex, len(newArticles))
-       #print(scraped_printout)
+       scraped_printout = "and %s new articles on %s \n" % (len(newArticles), webPage)
        global message
-       message = message + scraped_printout + "\n"
+       message = message + scraped_printout
 
        if os.path.exists(dbString):
               #if there are new articles
@@ -80,11 +79,11 @@ def updateDb(siteIndex, webPage, db):
               if not isSiteOne:
                      db.loc[i, '2weeksViews'] = twoWeeksOld.views[twoWeeksOld.position == i].values[0]
 
-       db.drop(['timeSincePublishing'], axis=1, inplace = True)
-       updated_printout = "Site %s has %s articles updated." % (siteIndex, len(threeDaysOld) + len(oneWeekOld) + len(twoWeeksOld))
-       #print(updated_printout)
+       updated_printout = "There are %s updated articles " % (len(threeDaysOld) + len(oneWeekOld) + len(twoWeeksOld))
        global message
-       message = message + updated_printout + "\n"
+       message = message + updated_printout
+       
+       db.drop(['timeSincePublishing'], axis=1, inplace = True)
  
        return(db)
 
@@ -103,13 +102,10 @@ def updateLinks(siteIndex, links):
 
 def crawlSite(siteIndex, webPage):
        db = loadDb(siteIndex)
-
-       #Let's update (views and comments) the db first
-       if not db.empty:
-              db = updateDb(siteIndex, webPage, db)
        
        newArticles = pd.DataFrame()
 
+       #Let's crawl for new articles
        if siteIndex == 1:
               newArticles = site1.gatherNewArticles(webPage, db)
        elif siteIndex == 2:
@@ -119,33 +115,30 @@ def crawlSite(siteIndex, webPage):
        elif siteIndex == 4:
               newArticles = site4.gatherNewArticles(webPage, db)
        
-       saveDb(siteIndex, newArticles, db)
+       #Let's update (views and comments) the db
+       if not db.empty:
+              db = updateDb(siteIndex, webPage, db)
+       
+       saveDb(siteIndex, newArticles, db, webPage)
 
 def iterateSites():
-       start_message = "Newspaper boy dispatched..."
-       print(start_message)
+       print("...")
        global message
-       message = message + start_message + "\n"
+       message = message + "Newspaper boy dispatched... \n"
 
        abspath = os.path.abspath(__file__)
        dname = os.path.dirname(abspath)
        os.chdir(dname)
        with open('sites.txt', 'r') as sites:
+              sites_list = sites.read().split("\n")
               for siteIndex in range(1, 5):
-                     webPage = ''
-                     if siteIndex != 4:
-                            webPage = sites.readlines(siteIndex)[0][:-2] # -2 helps clean \n at the end of each line 
-                     else:
-                            webPage = sites.readlines(siteIndex)[0]
-
-                     crawlSite(siteIndex, webPage)
+                     crawlSite(siteIndex, sites_list[siteIndex - 1])
 
 message = ""
 iterateSites()
 
-final_message = 'Stay classy San Diego.'
-print(final_message)
-message = message + final_message
+message = message + 'Stay classy San Diego.'
+print(message)
 
 import smtplib, ssl
 
@@ -155,8 +148,8 @@ with open('mail.txt', 'r') as mail:
        password = elements[1]
        receiver = elements[2]
 
-       context = ssl.create_default_context()
-       with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as server:
-              server.login(sender, password)
-              server.sendmail(sender, receiver, message)
+       server = smtplib.SMTP_SSL("smtp.gmail.com", 465)
+       server.login(sender, password)
+       server.sendmail(sender, receiver, message)
+       server.quit()
 

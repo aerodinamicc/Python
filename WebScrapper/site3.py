@@ -40,9 +40,9 @@ def crawlLinks(links):
                      articleDate = li[1].text
                      systemDate = datetime.now()
                      views = li[2].text
-                     views = views.replace(" прочита", "")
+                     views = views.split(" ")[0]
                      comments = li[3].text
-                     comments = comments.replace(" коментара", "")
+                     comments = comments.split(" ")[0]
                      breadCrumbs = page.select('.breadcrumb')[0]
                      category = breadCrumbs.find_all('span')
                      if len(category) > 3:
@@ -87,9 +87,9 @@ def updateLinks(links):
                             comments = 'NaN'
                      else:
                             views = li[2].text
-                            views = views.replace(" прочита", "")
+                            views = views.split(" ")[0]
                             comments = li[3].text
-                            comments = comments.replace(" коментара", "")
+                            comments = comments.split(" ")[0]
                      
                      #append to articlesContent
                      updatedContent = updatedContent.append({'link' : link,
