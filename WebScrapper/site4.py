@@ -72,13 +72,17 @@ def updateLinks(links):
 
                      #metadata
                      meta = page.select('.additional-info')[0]
-                     views = meta.select('#articleViews')[0].text
-                     comments = meta.select('.comments')[0].text
+                     views = None
+                     comments = None
+
+                     #if less than 1 the article has been removed
+                     if len(meta.select('#articleViews')) > 0:
+                            views = meta.select('#articleViews')[0].text
+                            comments = meta.select('.comments')[0].text
                      
                      #append to articlesContent
                      updatedContent = updatedContent.append({'link' : link,
                                                                'views' : views,
                                                                'comments' : comments},
                                                                ignore_index=True)
-
        return(updatedContent)
