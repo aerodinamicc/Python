@@ -65,3 +65,18 @@ group by 1, 2, 3, 4, 5, 7, 10
 order by 1, 2, 3, 4, 5)
 
 select * from articles_views
+	    
+------------------------------------------------
+--- Articles that generated more than 10 % of their site's traffic for a specofic date
+------------------------------------------------
+select
+	site, 
+	date, 
+	sum_comments, 
+	sum_views, 
+	site_sum_views, 
+	share_views, 
+	title 
+from news.popular_articles
+	where share_views > 10
+	order by site, date
