@@ -40,9 +40,9 @@ select
 	lag(comments) OVER (PARTITION BY link
                     	ORDER BY visited_timestamp) as prev_comments,
  	lag(views) OVER (PARTITION BY link
-					 ORDER BY visited_timestamp) as prev_views,
+			ORDER BY visited_timestamp) as prev_views,
 	lag(date_parse(visited_timestamp, '%Y-%m-%d %H:%i:%S')) OVER (PARTITION BY link
-																  ORDER BY visited_timestamp) as prev_visited,
+									ORDER BY visited_timestamp) as prev_visited,
 	trim(tags) as tags,
 	category,
 	row_number() OVER (PARTITION BY link
